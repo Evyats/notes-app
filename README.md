@@ -1,1 +1,1 @@
-hello world
+python -m uvicorn app:app
