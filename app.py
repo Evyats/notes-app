@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 import logging
-
+import config
 
 
 
@@ -10,12 +10,14 @@ import logging
 ############### FAST API DEFINITION ###############
 
 logger = None
+settings = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Runs once on startup
-    global logger
+    global logger, settings
     logger = logging.getLogger(__name__)
+    settings = config.getSettings()
     logging.basicConfig(
         level=logging.DEBUG,
         format="[%(levelname)s] %(asctime)s %(name)s | %(message)s",
@@ -57,10 +59,11 @@ async def middleware(request: Request, call_next):
 
 
 
-
-
 @app.get("/health")
 def health():
+    logger.debug(settings.DB_IP)
+    logger.debug(settings.PORT)
+    logger.debug(settings.SOME_ENV_VAR)
     return {
         "status": 200,
         "message": "healthy"
