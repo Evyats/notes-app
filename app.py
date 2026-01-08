@@ -3,6 +3,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 import logging
 import config
+from db import print_table, execute_sql, create_users_table, create_notes_table
 
 
 
@@ -16,6 +17,8 @@ settings = None
 async def lifespan(app: FastAPI):
     # Runs once on startup
     global logger, settings
+    create_users_table()
+    create_notes_table()
     logger = logging.getLogger(__name__)
     settings = config.getSettings()
     logging.basicConfig(
@@ -61,10 +64,29 @@ async def middleware(request: Request, call_next):
 
 @app.get("/health")
 def health():
-    logger.debug(settings.DB_IP)
-    logger.debug(settings.PORT)
-    logger.debug(settings.SOME_ENV_VAR)
+    logger.info(settings.DATABASE_URL)
+    logger.info(settings.PORT)
     return {
         "status": 200,
         "message": "healthy"
     }
+
+
+
+
+@app.get("/run_code/{email}")
+def run_code(email: str):
+    pass
+    result = execute_sql(
+        "INSERT INTO users (email, password_hash) VALUES (:email, :password_hash) RETURNING id",
+        {"email": email, "password_hash": "some_pass_hash"}
+    )
+    user_id = result[0]["id"]
+    print_table(execute_sql("SELECT * FROM users"))
+    execute_sql(
+        "INSERT INTO notes (user_id, note) VALUES (:user_id, :note)",
+        {"user_id": user_id, "note": "this is the content of some note"}
+    )
+    print_table(execute_sql("SELECT * FROM notes"))
+    
+    return "look at the logs"
