@@ -1,5 +1,5 @@
 from tabulate import tabulate
-import config
+from . import config
 from sqlalchemy import create_engine, text
 
 
