@@ -3,7 +3,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 import logging
 import config
-from db import print_table, execute_sql, create_users_table, create_notes_table
+from db import print_table, execute_sql, create_users_table, create_notes_table, check_connectivity
 
 
 
@@ -17,15 +17,25 @@ settings = None
 async def lifespan(app: FastAPI):
     # Runs once on startup
     global logger, settings
-    create_users_table()
-    create_notes_table()
-    logger = logging.getLogger(__name__)
+    
     settings = config.getSettings()
+    
+    logger = logging.getLogger(__name__)
     logging.basicConfig(
         level=logging.DEBUG,
         format="[%(levelname)s] %(asctime)s %(name)s | %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
     )
+
+    try:
+        check_connectivity()
+        logger.info("DB connection OK")
+    except:
+        logger.exception("DB connection FAILED, shutting down")
+        raise
+    create_users_table()
+    create_notes_table()
+
     logger.info("Server started successfully!")
     yield
     # Runs once on shutdown

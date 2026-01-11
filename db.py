@@ -26,6 +26,9 @@ def print_table(rows, table_name=None):
     print(tabulate(rows, headers="keys", tablefmt="rounded_outline"))
 
 
+def check_connectivity():
+    with engine.connect() as connection:
+        connection.execute(text("SELECT 1"))
 
 
 
