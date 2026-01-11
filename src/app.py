@@ -1,10 +1,15 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request
+from email.policy import HTTP
+from sqlite3 import IntegrityError
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 import logging
-from . import config
-from .db import print_table, execute_sql, create_users_table, create_notes_table, check_connectivity
-
+import psycopg2
+from pydantic import BaseModel
+import sqlalchemy
+from . import config, db
+from .auth import pass_hash
+from datetime import UTC, datetime
 
 
 
@@ -28,13 +33,13 @@ async def lifespan(app: FastAPI):
     )
 
     try:
-        check_connectivity()
+        db.check_connectivity()
         logger.info("DB connection OK")
     except:
         logger.exception("DB connection FAILED, shutting down")
         raise
-    create_users_table()
-    create_notes_table()
+    db.create_users_table()
+    db.create_notes_table()
 
     logger.info("Server started successfully!")
     yield
@@ -87,26 +92,50 @@ def health():
 @app.get("/testings/insert_user_note_combination/{email}")
 def run_code(email: str):
     pass
-    result = execute_sql(
+    result = db.execute_sql(
         "INSERT INTO users (email, password_hash) VALUES (:email, :password_hash) RETURNING id",
         {"email": email, "password_hash": "some_pass_hash"}
     )
     user_id = result[0]["id"]
-    print_table(execute_sql("SELECT * FROM users"))
-    execute_sql(
+    db.print_table(db.execute_sql("SELECT * FROM users"))
+    db.execute_sql(
         "INSERT INTO notes (user_id, note) VALUES (:user_id, :note)",
         {"user_id": user_id, "note": "this is the content of some note"}
     )
-    print_table(execute_sql("SELECT * FROM notes"))
+    db.print_table(db.execute_sql("SELECT * FROM notes"))
     
     return "look at the logs"
 
 
 
-# @app.post("/api/users")
-# def sign_up(body: request()):
-#     # body: email, password
-
-#     # hashing the pass
-#     # add new line
-#     # return the id
+class SignUpRequest(BaseModel):
+    email: str
+    password: str
+@app.post("/api/users")
+def sign_up(body: SignUpRequest):
+    email = body.email
+    password_hash = pass_hash.hash(body.password)
+    created = datetime.now(UTC)
+    try:
+        result = db.execute_sql(
+            """
+            INSERT INTO users
+            (email, password_hash, created)
+            VALUES
+            (:email, :password_hash, :created)
+            RETURNING id
+            """, 
+            {"email": email, "password_hash": password_hash, "created": created})
+        user_id = result[0]["id"]
+        logger.info(f"id added is: {user_id}")
+    except sqlalchemy.exc.IntegrityError as exception:
+        logger.error(exception)
+        # for seing the full trace:
+        # logger.exception(exception)
+        raise HTTPException(status_code=400, detail="Email already registered")
+    return {
+        "message": "user created successfully",
+        "email": email,
+        "created": created,
+        "id": user_id
+    }

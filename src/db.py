@@ -45,6 +45,7 @@ def create_table_users_newer():
     execute_sql(users_newer_query)
 
 
+##### USERS
 def create_users_table():
     users_query = """
         CREATE TABLE IF NOT EXISTS users(
@@ -56,7 +57,7 @@ def create_users_table():
     """
     execute_sql(users_query)
 
-
+##### NOTES
 def create_notes_table():
     notes_query = """
         CREATE TABLE IF NOT EXISTS notes(
