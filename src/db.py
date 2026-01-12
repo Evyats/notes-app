@@ -33,6 +33,9 @@ def check_connectivity():
 
 
 
+
+############### TABLES ###############
+
 def create_table_users_newer():
     users_newer_query = """
         CREATE TABLE IF NOT EXISTS users_newer(
@@ -45,7 +48,7 @@ def create_table_users_newer():
     execute_sql(users_newer_query)
 
 
-##### USERS
+# USERS
 def create_users_table():
     users_query = """
         CREATE TABLE IF NOT EXISTS users(
@@ -57,7 +60,7 @@ def create_users_table():
     """
     execute_sql(users_query)
 
-##### NOTES
+# NOTES
 def create_notes_table():
     notes_query = """
         CREATE TABLE IF NOT EXISTS notes(
@@ -75,7 +78,7 @@ def create_notes_table():
 
 
 
-
+############### TESTS ###############
 
 def test_insertion():
     create_table_users_newer()
