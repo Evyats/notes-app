@@ -1,14 +1,15 @@
 from contextlib import asynccontextmanager
 from email.policy import HTTP
 from sqlite3 import IntegrityError
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
 import logging
+from jose import ExpiredSignatureError
 import psycopg2
 from pydantic import BaseModel
 import sqlalchemy
+from .auth import jwt, pass_hash
 from . import config, db
-from .auth import pass_hash
 from datetime import UTC, datetime
 
 
@@ -139,3 +140,63 @@ def sign_up(body: SignUpRequest):
         "created": created,
         "id": user_id
     }
+
+
+
+
+class SignInRequest(BaseModel):
+    email: str
+    password: str
+@app.post("/auth/login")
+def sign_in(body: SignInRequest):
+
+    rows = db.execute_sql(
+        """
+        SELECT id, password_hash
+        FROM users
+        WHERE email=:email
+        """,
+        {"email": body.email}
+    )
+    
+    if len(rows) < 1:
+        logger.info("email is not registered")
+        raise HTTPException(400, "Invalid credentials")
+
+    if not pass_hash.verify(body.password, rows[0]["password_hash"]):
+        logger.info("incorrect password")
+        raise HTTPException(400, "Invalid credentials")
+
+    user_id = rows[0]["id"]
+    token = jwt.create_access_token(user_id, 30, 0)
+    
+    return {
+        "user_id": user_id,
+        "access_token": token,
+        "token_type": "bearer"
+    }
+
+
+
+
+@app.get("/auth/me")
+def me(authorization: str = Header(...)):
+    try:
+        user_id = _verify_auth_header(authorization)
+    except ExpiredSignatureError:
+        logger.info("token is expired")
+        raise HTTPException(400, "token is invalid")
+    except Exception as exception:
+        logger.info(f"authorization is invalid: {exception}")
+        raise HTTPException(400, "token is invalid")
+    return {
+        "message": f"your user id is: {user_id} and your token is valid"
+    }
+
+
+def _verify_auth_header(auth_header):
+    if not auth_header: raise Exception("Missing Authorization header")
+    scheme, _, token = auth_header.partition(" ")
+    if scheme.lower() != "bearer" or not token: raise Exception("Invalid Authorization header")
+    user_id = jwt.decode_access_token(token)
+    return user_id
