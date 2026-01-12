@@ -213,9 +213,11 @@ def sign_up(body: SignUpRequest):
 def list_users(page:int = 1, page_size:int = 10):
     rows = db.execute_sql(
         """
-        SELECT id, email, created
-        FROM users
-        ORDER BY created DESC
+        SELECT u.id, u.email, u.created, COUNT(n.note) AS notes_count
+        FROM users u
+        LEFT JOIN notes n ON u.id=n.user_id
+        GROUP BY u.id
+        ORDER BY u.created DESC
         OFFSET :offset
         LIMIT :limit
         """,
@@ -244,14 +246,6 @@ def get_user(user_id: int):
 # TODO allow only for authorized
 @app.delete("/api/users/{user_id}")
 def delete_user(user_id: int):
-    users_deleted = db.execute_sql(
-        """
-        DELETE FROM users 
-        WHERE id=:user_id 
-        RETURNING *
-        """,
-        {"user_id": user_id}
-    )
     notes_deleted = db.execute_sql(
         """
         DELETE FROM notes 
@@ -260,9 +254,14 @@ def delete_user(user_id: int):
         """,
         {"user_id": user_id}
     )
-    
-    if len(users_deleted) == 0:
-        raise HTTPException(400, f"user {user_id} does not exist")
-    return {
-        "message": f"user {user_id} was deleted successfully, along with {len(notes_deleted)} notes",
-    }
+    users_deleted = db.execute_sql(
+        """
+        DELETE FROM users 
+        WHERE id=:user_id 
+        RETURNING *
+        """,
+        {"user_id": user_id}
+    )
+    if len(users_deleted) == 0: raise HTTPException(400, f"user {user_id} does not exist")
+    logger.info(f"deleted user {user_id} and {len(notes_deleted)} notes")
+    return { "message": f"user {user_id} was deleted successfully, along with {len(notes_deleted)} notes" }
