@@ -265,3 +265,104 @@ def delete_user(user_id: int):
     if len(users_deleted) == 0: raise HTTPException(400, f"user {user_id} does not exist")
     logger.info(f"deleted user {user_id} and {len(notes_deleted)} notes")
     return { "message": f"user {user_id} was deleted successfully, along with {len(notes_deleted)} notes" }
+
+
+
+
+# TODO allow only for authorized
+@app.get("/api/users/{user_id}/notes")
+def get_notes(user_id: int):
+    rows = db.execute_sql(
+        """
+        SELECT id, created FROM notes WHERE user_id=:user_id
+        """,
+        {"user_id": user_id}
+    )
+    return rows
+
+
+
+# TODO allow only for authorized
+class AddNoteRequest(BaseModel):
+    note: str
+@app.post("/api/users/{user_id}/notes")
+def add_note(user_id: int, body: AddNoteRequest):
+    if not _user_exists(user_id): raise HTTPException(400, f"user {user_id} does not exist")
+    rows = db.execute_sql(
+        """
+        INSERT INTO notes
+        (user_id, note, created)
+        VALUES
+        (:user_id, :note, :created)
+        RETURNING id, user_id, created
+        """,
+        {"user_id": user_id, "note": body.note, "created": datetime.now(UTC)}
+    )
+    if len(rows) == 0: raise HTTPException(400, f"could not add note for user {user_id}")
+    return {
+        "message": "note added successfully",
+        "details": rows[0]
+    }
+
+
+def _user_exists(user_id):
+    rows = db.execute_sql(
+        """
+        SELECT id FROM users WHERE id=:user_id
+        """,
+        {"user_id": user_id}
+    )
+    return len(rows) > 0
+
+
+# TODO allow only for authorized
+@app.get("/api/users/{user_id}/notes/{note_id}")
+def get_note(user_id: int, note_id: int):
+    pass
+    if not _user_exists(user_id): raise HTTPException(400, f"user {user_id} does not exist")
+    rows = db.execute_sql(
+        """
+        SELECT id, note, created 
+        FROM notes 
+        WHERE user_id=:user_id AND id=:note_id
+        """,
+        {"user_id": user_id, "note_id": note_id}
+    )
+    if len(rows) == 0: raise HTTPException(400, f"note {note_id} for user {user_id} does not exist")
+    return rows[0]
+
+
+# TODO allow only for authorized
+@app.delete("/api/users/{user_id}/notes/{note_id}")
+def remove_note(user_id: int, note_id: int):
+    if not _user_exists(user_id): raise HTTPException(400, f"user {user_id} does not exist")
+    rows = db.execute_sql(
+        """
+        DELETE FROM notes 
+        WHERE id=:note_id 
+        RETURNING *
+        """,
+        {"note_id": note_id}
+    )
+    if len(rows) == 0: raise HTTPException(400, f"note {note_id} for user {user_id} does not exist")
+    return {"message": f"note {note_id} for user {user_id} was deleted successfully"}
+
+
+# TODO allow only for authorized
+class UpdateNoteRequest(BaseModel):
+    note: str
+@app.put("/api/users/{user_id}/notes/{note_id}")
+def update_note(user_id: int, note_id: int, body: UpdateNoteRequest):
+    if not _user_exists(user_id): raise HTTPException(400, f"user {user_id} does not exist")
+    rows = db.execute_sql(
+        """
+        UPDATE notes
+        SET note=:note
+        WHERE id=:note_id 
+        RETURNING *
+        """,
+        {"note_id": note_id, "note": body.note}
+    )
+    if len(rows) == 0: raise HTTPException(400, f"note {note_id} for user {user_id} does not exist")
+    logger.info("note {note_id} of user {user_id} was updated")
+    return {"message": f"note {note_id} for user {user_id} was updated successfully"}
