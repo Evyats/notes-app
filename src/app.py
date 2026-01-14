@@ -190,9 +190,9 @@ def sign_up(body: SignUpRequest):
 
 
 # TODO add authorization for admin only
-# TODO set rules for values of page and page size
+# TODO set rules for values of paage and page size
 @app.get("/api/users")
-def list_users(page: int = 1, page_size: int = 10):
+def list_users(page:int = 1, page_size:int = 10):
     rows = users.list_users((page - 1) * page_size, page_size)
     return rows
 
@@ -219,7 +219,7 @@ def delete_user(user_id: int):
 # TODO add authorization for admin only
 # TODO set rules for values of page and page_size
 @app.get("/api/notes")
-def list_all_notes(page: int = 1, page_size: int = 10):
+def list_all_notes(page:int = 1, page_size:int = 10):
     rows = notes.list_all_notes((page - 1) * page_size, page_size)
     return rows
 
