@@ -16,6 +16,7 @@ from datetime import UTC, datetime
 
 logger = None
 settings = None
+# some line for testing change
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
