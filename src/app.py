@@ -216,6 +216,13 @@ def delete_user(user_id: int):
 
 
 
+# TODO add authorization for admin only
+# TODO set rules for values of page and page_size
+@app.get("/api/notes")
+def list_all_notes(page:int = 1, page_size:int = 10):
+    rows = notes.list_all_notes((page - 1) * page_size, page_size)
+    return rows
+
 
 # TODO allow only for authorized
 @app.get("/api/users/{user_id}/notes")
