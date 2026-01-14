@@ -1,6 +1,17 @@
 from .. import db
 
 
+def list_all_notes(offset: int, limit: int):
+    return db.execute_sql(
+        """
+        SELECT id, user_id, created FROM notes
+        ORDER BY created DESC
+        LIMIT :limit OFFSET :offset
+        """,
+        {"limit": limit, "offset": offset},
+    )
+
+
 def list_notes(user_id: int):
     return db.execute_sql(
         """
