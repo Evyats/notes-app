@@ -6,7 +6,7 @@ from jose import ExpiredSignatureError
 from pydantic import BaseModel
 import sqlalchemy
 from .auth import jwt, pass_hash
-from . import config, db
+from . import config, db, routes
 from .repositories import users, notes
 from datetime import UTC, datetime
 
@@ -24,12 +24,12 @@ async def lifespan(app: FastAPI):
     
     settings = config.getSettings()
     
-    logger = logging.getLogger(__name__)
     logging.basicConfig(
         level=logging.DEBUG,
         format="[%(levelname)s] %(asctime)s %(name)s | %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
     )
+    logger = logging.getLogger(__name__)
 
     try:
         db.check_connectivity()
@@ -46,6 +46,9 @@ async def lifespan(app: FastAPI):
     pass
 
 app = FastAPI(lifespan=lifespan)
+app.include_router(routes.auth.router)
+
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -57,11 +60,12 @@ app.add_middleware(
 
 @app.middleware("http")
 async def middleware(request: Request, call_next):
-    """logging the whole request:
+    """
+    # logging the whole request:
     body = await request.body()
-    print(f"Request: {request.method} {request.url}")
-    print(f"Headers: {dict(request.headers)}")
-    print(f"Body: {body.decode(errors='ignore')}")
+    logger.debug(f"Request: {request.method} {request.url}")
+    logger.debug(f"Headers: {dict(request.headers)}")
+    logger.debug(f"Body: {body.decode(errors='ignore')}")
     """
     response = await call_next(request)
     """logger.info(
@@ -108,55 +112,6 @@ def run_code(email: str):
 
 
 
-
-class SignInRequest(BaseModel):
-    email: str
-    password: str
-@app.post("/auth/login")
-def sign_in(body: SignInRequest):
-    rows = users.get_user_by_email(body.email)
-    
-    if len(rows) < 1:
-        logger.info("email is not registered")
-        raise HTTPException(400, "Invalid credentials")
-
-    if not pass_hash.verify(body.password, rows[0]["password_hash"]):
-        logger.info("incorrect password")
-        raise HTTPException(400, "Invalid credentials")
-
-    user_id = rows[0]["id"]
-    token = jwt.create_access_token(user_id, 30, 0)
-    
-    return {
-        "user_id": user_id,
-        "access_token": token,
-        "token_type": "bearer"
-    }
-
-
-
-
-@app.get("/auth/me")
-def me(authorization: str = Header(...)):
-    try:
-        user_id = _verify_auth_header(authorization)
-    except ExpiredSignatureError:
-        logger.info("token is expired")
-        raise HTTPException(400, "token is invalid")
-    except Exception as exception:
-        logger.info(f"authorization is invalid: {exception}")
-        raise HTTPException(400, "token is invalid")
-    return {
-        "message": f"your user id is: {user_id} and your token is valid"
-    }
-
-
-def _verify_auth_header(auth_header):
-    if not auth_header: raise Exception("Missing Authorization header")
-    scheme, _, token = auth_header.partition(" ")
-    if scheme.lower() != "bearer" or not token: raise Exception("Invalid Authorization header")
-    user_id = jwt.decode_access_token(token)
-    return user_id
 
 
 
