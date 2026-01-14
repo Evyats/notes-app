@@ -6,9 +6,10 @@ def list_all_notes(offset: int, limit: int):
         """
         SELECT id, user_id, created FROM notes
         ORDER BY created DESC
-        LIMIT :limit OFFSET :offset
+        OFFSET :offset
+        LIMIT :limit
         """,
-        {"limit": limit, "offset": offset},
+        {"offset": offset, "limit": limit},
     )
 
 
