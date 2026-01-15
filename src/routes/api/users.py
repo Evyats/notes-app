@@ -1,15 +1,14 @@
 from contextlib import asynccontextmanager
-from fastapi import APIRouter, FastAPI, HTTPException, Header, Request
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
 import logging
-from fastapi.params import Depends
 from jose import ExpiredSignatureError
 from pydantic import BaseModel
 import sqlalchemy
 from ...repositories import users, notes
 from ...auth import jwt, pass_hash
 from datetime import UTC, datetime
-
+from ...auth import auth_header
 
 
 logger = logging.getLogger(__name__)
@@ -49,21 +48,21 @@ def sign_up(body: SignUpRequest):
 
 
 
-
-# TODO add authorization for admin only
 # TODO set rules for values of page and page size
-@router.get("")
+@router.get("", dependencies=[Depends(auth_header.require_admin)])
 def list_users(page: int = 1, page_size: int = 10):
     rows = users.list_users((page - 1) * page_size, page_size)
     return rows
 
 
-# TODO allow only for authorized
-@router.get("/{user_id}")
+
+@router.get("/{user_id}", dependencies=[Depends(auth_header.require_owner_or_admin)])
 def get_user(user_id: int):
     rows = users.get_user(user_id)
     if len(rows) == 0: raise HTTPException(400, f"user {user_id} does not exist")
     return rows[0]
+
+
 
 
 # TODO allow only for authorized

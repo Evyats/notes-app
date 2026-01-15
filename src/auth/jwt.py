@@ -6,7 +6,7 @@ SECRET_KEY = "change-me-to-a-long-random"
 ALGO = "HS256"
 
 
-def create_access_token(user_id: int, exp_seconds=10, exp_minutes=0) -> str:
+def create_access_token(user_id: int, exp_minutes=10, exp_seconds=0) -> str:
     now = datetime.now(UTC)
     payload = {"sub": str(user_id), "exp": now + timedelta(seconds=exp_seconds, minutes=exp_minutes)}
     token = jwt.encode(payload, SECRET_KEY, algorithm=ALGO)

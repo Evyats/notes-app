@@ -58,7 +58,7 @@ def create_users_table():
             id              SERIAL PRIMARY KEY,
             email           TEXT UNIQUE NOT NULL,
             password_hash   TEXT NOT NULL,
-            created         TIMESTAMP DEFAULT NOW()
+            created         TIMESTAMP DEFAULT NOW(),
             is_admin        BOOLEAN NOT NULL DEFAULT false
         )
     """
@@ -107,7 +107,7 @@ def create_admin():
 def get_admin_permissions():
     rows = execute_sql("SELECT id FROM users WHERE email='admin'")
     admin_id = rows[0]["id"]
-    token = jwt.create_access_token(admin_id, 0, 30)
+    token = jwt.create_access_token(admin_id, 30, 0)
     print("Bearer", token)
     return {
         "user_id": admin_id,

@@ -43,7 +43,7 @@ def list_users(offset: int, limit: int):
 def get_user(user_id: int):
     return db.execute_sql(
         """
-        SELECT u.id, u.email, u.created, COUNT(n.note) AS notes_count
+        SELECT u.id, u.email, u.created, u.is_admin, COUNT(n.note) AS notes_count
         FROM users u
         LEFT JOIN notes n ON u.id=n.user_id
         WHERE u.id=:user_id
