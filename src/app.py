@@ -45,6 +45,8 @@ async def lifespan(app: FastAPI):
     # Runs once on shutdown
     pass
 
+
+
 app = FastAPI(lifespan=lifespan)
 app.include_router(routes.auth.router)
 app.include_router(routes.api.users.router)
@@ -82,6 +84,9 @@ async def middleware(request: Request, call_next):
 
 
 
+
+
+
 @app.get("/health")
 def health():
     logger.info(f"db url: {settings.DATABASE_URL}")
@@ -90,27 +95,4 @@ def health():
         "status": 200,
         "message": "healthy"
     }
-
-
-@app.get("/testings/insert_user_note_combination/{email}")
-def run_code(email: str):
-    pass
-    result = db.execute_sql(
-        "INSERT INTO users (email, password_hash) VALUES (:email, :password_hash) RETURNING id",
-        {"email": email, "password_hash": "some_pass_hash"}
-    )
-    user_id = result[0]["id"]
-    db.print_table(db.execute_sql("SELECT * FROM users"))
-    db.execute_sql(
-        "INSERT INTO notes (user_id, note) VALUES (:user_id, :note)",
-        {"user_id": user_id, "note": "this is the content of some note"}
-    )
-    db.print_table(db.execute_sql("SELECT * FROM notes"))
-    
-    return "look at the logs"
-
-
-
-
-
 

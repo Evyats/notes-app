@@ -1,23 +1,15 @@
-from contextlib import asynccontextmanager
-from fastapi import APIRouter, Depends, FastAPI, HTTPException, Header, Request
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import APIRouter, Depends, HTTPException
 import logging
-from jose import ExpiredSignatureError
 from pydantic import BaseModel
 import sqlalchemy
 from ...repositories import users, notes
-from ...auth import jwt, pass_hash
+from ...auth import pass_hash
 from datetime import UTC, datetime
 from ...auth import auth_header
 
 
 logger = logging.getLogger(__name__)
-
-
-
 router = APIRouter(prefix="/api/users")
-
-
 
 
 
@@ -47,16 +39,21 @@ def sign_up(body: SignUpRequest):
 
 
 
-
 # TODO set rules for values of page and page size
-@router.get("", dependencies=[Depends(auth_header.require_admin)])
+@router.get(
+    "",
+    dependencies=[Depends(auth_header.require_admin)]
+)
 def list_users(page: int = 1, page_size: int = 10):
     rows = users.list_users((page - 1) * page_size, page_size)
     return rows
 
 
 
-@router.get("/{user_id}", dependencies=[Depends(auth_header.require_owner_or_admin)])
+@router.get(
+    "/{user_id}",
+    dependencies=[Depends(auth_header.require_owner_or_admin)]
+)
 def get_user(user_id: int):
     rows = users.get_user(user_id)
     if len(rows) == 0: raise HTTPException(400, f"user {user_id} does not exist")
@@ -65,8 +62,10 @@ def get_user(user_id: int):
 
 
 
-# TODO allow only for authorized
-@router.delete("/{user_id}")
+@router.delete(
+    "/{user_id}",
+    dependencies=[Depends(auth_header.require_admin)]
+)
 def delete_user(user_id: int):
     notes_deleted = users.delete_user_notes(user_id)
     users_deleted = users.delete_user(user_id)
@@ -78,19 +77,23 @@ def delete_user(user_id: int):
 
 
 
-
-# TODO allow only for authorized
-@router.get("/{user_id}/notes")
+@router.get(
+    "/{user_id}/notes", 
+    dependencies=[Depends(auth_header.require_owner_or_admin)]
+)
 def get_notes(user_id: int):
     rows = notes.list_notes(user_id)
     return rows
 
 
 
-# TODO allow only for authorized
+
 class AddNoteRequest(BaseModel):
     note: str
-@router.post("/{user_id}/notes")
+@router.post(
+    "/{user_id}/notes", 
+    dependencies=[Depends(auth_header.require_owner_or_admin)]
+)
 def add_note(user_id: int, body: AddNoteRequest):
     if not users.user_exists(user_id): raise HTTPException(400, f"user {user_id} does not exist")
     rows = notes.create_note(user_id, body.note, datetime.now(UTC))
@@ -101,8 +104,11 @@ def add_note(user_id: int, body: AddNoteRequest):
     }
 
 
-# TODO allow only for authorized
-@router.get("/{user_id}/notes/{note_id}")
+
+@router.get(
+    "/{user_id}/notes/{note_id}", 
+    dependencies=[Depends(auth_header.require_owner_or_admin)]
+)
 def get_note(user_id: int, note_id: int):
     pass
     if not users.user_exists(user_id): raise HTTPException(400, f"user {user_id} does not exist")
@@ -111,8 +117,11 @@ def get_note(user_id: int, note_id: int):
     return rows[0]
 
 
-# TODO allow only for authorized
-@router.delete("/{user_id}/notes/{note_id}")
+
+@router.delete(
+    "/{user_id}/notes/{note_id}", 
+    dependencies=[Depends(auth_header.require_owner_or_admin)]
+)
 def remove_note(user_id: int, note_id: int):
     if not users.user_exists(user_id): raise HTTPException(400, f"user {user_id} does not exist")
     rows = notes.delete_note(note_id)
@@ -120,10 +129,14 @@ def remove_note(user_id: int, note_id: int):
     return {"message": f"note {note_id} for user {user_id} was deleted successfully"}
 
 
-# TODO allow only for authorized
+
+
 class UpdateNoteRequest(BaseModel):
     note: str
-@router.put("/{user_id}/notes/{note_id}")
+@router.put(
+    "/{user_id}/notes/{note_id}", 
+    dependencies=[Depends(auth_header.require_owner_or_admin)]
+)
 def update_note(user_id: int, note_id: int, body: UpdateNoteRequest):
     if not users.user_exists(user_id): raise HTTPException(400, f"user {user_id} does not exist")
     rows = notes.update_note(note_id, body.note)
