@@ -25,7 +25,7 @@ router = APIRouter(prefix="/api/users")
 class SignUpRequest(BaseModel):
     email: str
     password: str
-@router.post("/")
+@router.post("")
 def sign_up(body: SignUpRequest):
     email = body.email
     password_hash = pass_hash.hash(body.password)
@@ -52,7 +52,7 @@ def sign_up(body: SignUpRequest):
 
 # TODO add authorization for admin only
 # TODO set rules for values of page and page size
-@router.get("/")
+@router.get("")
 def list_users(page: int = 1, page_size: int = 10):
     rows = users.list_users((page - 1) * page_size, page_size)
     return rows

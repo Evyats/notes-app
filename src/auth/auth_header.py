@@ -9,7 +9,7 @@ from .jwt import decode_access_token
 
 
 security = HTTPBearer()
-logger = logging.getLogger(name="__name__")
+logger = logging.getLogger(__name__)
 
 
 
@@ -26,7 +26,9 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
 
 def require_admin(current_user = Depends(get_current_user)):
     # TODO add a is admin field to the user table
-    if not current_user.get("is_admin"): raise HTTPException(status_code=403, detail="Forbidden")
+    if not current_user.get("is_admin"):
+        logger.info(f"user {current_user['id']} tried to access admin only resource")
+        raise HTTPException(status_code=403, detail="Forbidden")
     return current_user
 
 
