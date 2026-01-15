@@ -34,7 +34,7 @@ def require_admin(current_user = Depends(get_current_user)):
 def require_owner_or_admin(user_id, current_user = Depends(get_current_user)):
     if str(current_user["id"]) != user_id and not current_user.get("is_admin"):
         logger.info(f"user {current_user['id']} tried to access data of user {user_id}")
-        logger.info(f"user is admin: {current_user.get("is_admin")}")
+        logger.info(f"user is admin: {current_user.get('is_admin')}")
         raise HTTPException(status_code=403, detail="Forbidden")
     return current_user
     

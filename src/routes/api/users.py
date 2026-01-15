@@ -27,7 +27,7 @@ def sign_up(body: SignUpRequest):
         logger.info(f"id added is: {user_id}")
     except sqlalchemy.exc.IntegrityError as exception:
         logger.error(exception)
-        # for seing the full trace:
+        # for seeing the full trace:
         # logger.exception(exception)
         raise HTTPException(status_code=400, detail="Email already registered")
     return {
@@ -110,7 +110,7 @@ def add_note(user_id: int, body: AddNoteRequest):
     dependencies=[Depends(auth_header.require_owner_or_admin)]
 )
 def get_note(user_id: int, note_id: int):
-    pass
+
     if not users.user_exists(user_id): raise HTTPException(400, f"user {user_id} does not exist")
     rows = notes.get_note(user_id, note_id)
     if len(rows) == 0: raise HTTPException(400, f"note {note_id} for user {user_id} does not exist")
@@ -141,5 +141,5 @@ def update_note(user_id: int, note_id: int, body: UpdateNoteRequest):
     if not users.user_exists(user_id): raise HTTPException(400, f"user {user_id} does not exist")
     rows = notes.update_note(note_id, body.note)
     if len(rows) == 0: raise HTTPException(400, f"note {note_id} for user {user_id} does not exist")
-    logger.info("note {note_id} of user {user_id} was updated")
+    logger.info(f"note {note_id} of user {user_id} was updated")
     return {"message": f"note {note_id} for user {user_id} was updated successfully"}
