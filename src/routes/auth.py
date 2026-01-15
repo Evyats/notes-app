@@ -7,7 +7,7 @@ from jose import ExpiredSignatureError
 from pydantic import BaseModel
 import sqlalchemy
 from ..repositories import users
-from ..auth import jwt, pass_hash
+from ..auth import jwt, pass_hash, auth_header
 from datetime import UTC, datetime
 
 
@@ -54,18 +54,11 @@ def sign_in(body: SignInRequest):
 
 
 @router.get("/me")
-def me(authorization: str = Header(...)):
-    try:
-        user_id = _verify_auth_header(authorization)
-    except ExpiredSignatureError:
-        logger.info("token is expired")
-        raise HTTPException(400, "token is invalid")
-    except Exception as exception:
-        logger.info(f"authorization is invalid: {exception}")
-        raise HTTPException(400, "token is invalid")
+def me(current_user=Depends(auth_header.get_current_user)):
     return {
-        "message": f"your user id is: {user_id} and your token is valid"
+        "message": f"your user id is: {current_user['id']} and your token is valid"
     }
+
 
 
 
@@ -77,4 +70,7 @@ def _verify_auth_header(auth_header):
     if scheme.lower() != "bearer" or not token: raise Exception("Invalid Authorization header")
     user_id = jwt.decode_access_token(token)
     return user_id
+
+
+
 
