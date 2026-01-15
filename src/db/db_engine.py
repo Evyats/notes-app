@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 from tabulate import tabulate
-from .auth import pass_hash, jwt
-from . import config
+from ..auth import pass_hash, jwt
+from .. import config
 from sqlalchemy import create_engine, text
 
 
@@ -81,6 +81,8 @@ def create_notes_table():
 
 
 
+
+
 ############### SCRIPTS ###############
 
 def add_admin_col():
@@ -119,6 +121,8 @@ def get_admin_permissions():
 
 
 
+
+
 ############### TESTS ###############
 
 def test_insertion():
@@ -130,7 +134,6 @@ def test_insertion():
         ('evyats6@gmail.com', 'somepasshash')
     """)
     print_table(execute_sql("""SELECT * FROM users_newer"""))
-
 
 
 

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 import logging
 from pydantic import BaseModel
 import sqlalchemy
-from ...repositories import users, notes
+from ...db import users, notes
 from ...auth import pass_hash
 from datetime import UTC, datetime
 from ...auth import auth_header
@@ -11,6 +11,17 @@ from ...auth import auth_header
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/users")
 
+
+
+
+# TODO set rules for values of page and page size
+@router.get(
+    "",
+    dependencies=[Depends(auth_header.require_admin)]
+)
+def list_users(page: int = 1, page_size: int = 10):
+    rows = users.list_users((page - 1) * page_size, page_size)
+    return rows
 
 
 class SignUpRequest(BaseModel):
@@ -39,15 +50,6 @@ def sign_up(body: SignUpRequest):
 
 
 
-# TODO set rules for values of page and page size
-@router.get(
-    "",
-    dependencies=[Depends(auth_header.require_admin)]
-)
-def list_users(page: int = 1, page_size: int = 10):
-    rows = users.list_users((page - 1) * page_size, page_size)
-    return rows
-
 
 
 @router.get(
@@ -58,9 +60,6 @@ def get_user(user_id: int):
     rows = users.get_user(user_id)
     if len(rows) == 0: raise HTTPException(400, f"user {user_id} does not exist")
     return rows[0]
-
-
-
 
 @router.delete(
     "/{user_id}",
@@ -85,9 +84,6 @@ def get_notes(user_id: int):
     rows = notes.list_notes(user_id)
     return rows
 
-
-
-
 class AddNoteRequest(BaseModel):
     note: str
 @router.post(
@@ -105,6 +101,8 @@ def add_note(user_id: int, body: AddNoteRequest):
 
 
 
+
+
 @router.get(
     "/{user_id}/notes/{note_id}", 
     dependencies=[Depends(auth_header.require_owner_or_admin)]
@@ -116,8 +114,6 @@ def get_note(user_id: int, note_id: int):
     if len(rows) == 0: raise HTTPException(400, f"note {note_id} for user {user_id} does not exist")
     return rows[0]
 
-
-
 @router.delete(
     "/{user_id}/notes/{note_id}", 
     dependencies=[Depends(auth_header.require_owner_or_admin)]
@@ -127,9 +123,6 @@ def remove_note(user_id: int, note_id: int):
     rows = notes.delete_note(note_id)
     if len(rows) == 0: raise HTTPException(400, f"note {note_id} for user {user_id} does not exist")
     return {"message": f"note {note_id} for user {user_id} was deleted successfully"}
-
-
-
 
 class UpdateNoteRequest(BaseModel):
     note: str

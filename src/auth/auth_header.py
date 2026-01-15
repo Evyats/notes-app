@@ -2,10 +2,8 @@ import logging
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import ExpiredSignatureError
-from ..repositories import users
+from ..db import users
 from .jwt import decode_access_token
-
-
 
 
 security = HTTPBearer()
@@ -21,7 +19,6 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
     rows = users.get_user(user_id)
     if len(rows) == 0:              raise HTTPException(401, "User not found")
     return rows[0]
-    
 
 
 def require_admin(current_user = Depends(get_current_user)):

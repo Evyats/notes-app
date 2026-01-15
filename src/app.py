@@ -1,14 +1,9 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException, Header, Request
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 import logging
-from jose import ExpiredSignatureError
-from pydantic import BaseModel
-import sqlalchemy
-from .auth import jwt, pass_hash
-from . import config, db, routes
-from .repositories import users, notes
-from datetime import UTC, datetime
+from .db import db_engine
+from . import config, routes
 
 
 
@@ -32,13 +27,13 @@ async def lifespan(app: FastAPI):
     logger = logging.getLogger(__name__)
 
     try:
-        db.check_connectivity()
+        db_engine.check_connectivity()
         logger.info("DB connection OK")
     except:
         logger.exception("DB connection FAILED, shutting down")
         raise
-    db.create_users_table()
-    db.create_notes_table()
+    db_engine.create_users_table()
+    db_engine.create_notes_table()
 
     logger.info("Server started successfully!")
     yield
