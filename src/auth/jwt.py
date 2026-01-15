@@ -1,5 +1,5 @@
 from datetime import UTC, datetime, timedelta
-from jose import ExpiredSignatureError, jwt
+from jose import jwt
 
 
 SECRET_KEY = "change-me-to-a-long-random"

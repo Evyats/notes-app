@@ -1,8 +1,8 @@
-from .. import db
+from . import db_engine
 
 
 def get_user_by_email(email: str):
-    return db.execute_sql(
+    return db_engine.execute_sql(
         """
         SELECT id, password_hash
         FROM users
@@ -13,7 +13,7 @@ def get_user_by_email(email: str):
 
 
 def create_user(email: str, password_hash: str, created):
-    return db.execute_sql(
+    return db_engine.execute_sql(
         """
         INSERT INTO users
         (email, password_hash, created)
@@ -26,7 +26,7 @@ def create_user(email: str, password_hash: str, created):
 
 
 def list_users(offset: int, limit: int):
-    return db.execute_sql(
+    return db_engine.execute_sql(
         """
         SELECT u.id, u.email, u.created, COUNT(n.note) AS notes_count
         FROM users u
@@ -41,7 +41,7 @@ def list_users(offset: int, limit: int):
 
 
 def get_user(user_id: int):
-    return db.execute_sql(
+    return db_engine.execute_sql(
         """
         SELECT u.id, u.email, u.created, u.is_admin, COUNT(n.note) AS notes_count
         FROM users u
@@ -54,7 +54,7 @@ def get_user(user_id: int):
 
 
 def delete_user_notes(user_id: int):
-    return db.execute_sql(
+    return db_engine.execute_sql(
         """
         DELETE FROM notes
         WHERE user_id=:user_id
@@ -65,7 +65,7 @@ def delete_user_notes(user_id: int):
 
 
 def delete_user(user_id: int):
-    return db.execute_sql(
+    return db_engine.execute_sql(
         """
         DELETE FROM users
         WHERE id=:user_id
@@ -76,7 +76,7 @@ def delete_user(user_id: int):
 
 
 def user_exists(user_id: int) -> bool:
-    rows = db.execute_sql(
+    rows = db_engine.execute_sql(
         """
         SELECT id FROM users WHERE id=:user_id
         """,

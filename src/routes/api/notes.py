@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from fastapi.params import Depends
-from ...repositories import notes
+from ...db import notes
 from ...auth import auth_header
 
 

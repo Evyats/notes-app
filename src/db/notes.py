@@ -1,8 +1,9 @@
-from .. import db
+from . import db_engine
+
 
 
 def list_all_notes(offset: int, limit: int):
-    return db.execute_sql(
+    return db_engine.execute_sql(
         """
         SELECT id, user_id, created FROM notes
         ORDER BY created DESC
@@ -14,7 +15,7 @@ def list_all_notes(offset: int, limit: int):
 
 
 def list_notes(user_id: int):
-    return db.execute_sql(
+    return db_engine.execute_sql(
         """
         SELECT id, created FROM notes WHERE user_id=:user_id
         """,
@@ -23,7 +24,7 @@ def list_notes(user_id: int):
 
 
 def create_note(user_id: int, note: str, created):
-    return db.execute_sql(
+    return db_engine.execute_sql(
         """
         INSERT INTO notes
         (user_id, note, created)
@@ -36,7 +37,7 @@ def create_note(user_id: int, note: str, created):
 
 
 def get_note(user_id: int, note_id: int):
-    return db.execute_sql(
+    return db_engine.execute_sql(
         """
         SELECT id, note, created
         FROM notes
@@ -47,7 +48,7 @@ def get_note(user_id: int, note_id: int):
 
 
 def delete_note(note_id: int):
-    return db.execute_sql(
+    return db_engine.execute_sql(
         """
         DELETE FROM notes
         WHERE id=:note_id
@@ -58,7 +59,7 @@ def delete_note(note_id: int):
 
 
 def update_note(note_id: int, note: str):
-    return db.execute_sql(
+    return db_engine.execute_sql(
         """
         UPDATE notes
         SET note=:note

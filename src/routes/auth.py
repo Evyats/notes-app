@@ -2,10 +2,8 @@ from fastapi import APIRouter, HTTPException
 import logging
 from fastapi.params import Depends
 from pydantic import BaseModel
-from ..repositories import users
+from ..db import users
 from ..auth import jwt, pass_hash, auth_header
-
-
 
 
 logger = logging.getLogger(__name__)
@@ -29,7 +27,7 @@ def sign_in(body: SignInRequest):
         raise HTTPException(400, "Invalid credentials")
 
     user_id = rows[0]["id"]
-    token = jwt.create_access_token(user_id, 1, 30)
+    token = jwt.create_access_token(user_id, 5, 30)
     
     return {
         "user_id": user_id,
@@ -44,8 +42,3 @@ def me(current_user=Depends(auth_header.get_current_user)):
     return {
         "message": f"your user id is: {current_user['id']} and your token is valid"
     }
-
-
-
-
-
