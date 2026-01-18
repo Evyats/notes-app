@@ -2,8 +2,8 @@ from fastapi import APIRouter, HTTPException
 import logging
 from fastapi.params import Depends
 from pydantic import BaseModel
-from ..db import users
-from ..auth import jwt, pass_hash, auth_header
+from src.db import users
+from src.auth import jwt, pass_hash, auth_header
 
 
 logger = logging.getLogger(__name__)

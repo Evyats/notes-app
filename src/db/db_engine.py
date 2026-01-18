@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 from tabulate import tabulate
-from ..auth import pass_hash, jwt
-from .. import config
+from src.auth import pass_hash, jwt
+from src import config
 from sqlalchemy import create_engine, text
 
 
