@@ -2,10 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 import logging
 from pydantic import BaseModel
 import sqlalchemy
-from ...db import users, notes
-from ...auth import pass_hash
+from src.db import users, notes
+from src.auth import pass_hash, auth_header
 from datetime import UTC, datetime
-from ...auth import auth_header
 
 
 logger = logging.getLogger(__name__)

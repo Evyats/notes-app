@@ -2,7 +2,7 @@ import logging
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import ExpiredSignatureError
-from ..db import users
+from src.db import users
 from .jwt import decode_access_token
 
 

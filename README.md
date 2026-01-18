@@ -10,5 +10,7 @@ docker compose up
 python -m uvicorn src.app:app --host 0.0.0.0 --reload --port 8123
 ### Update dependencies
 pip freeze > requirements.txt
+### Run DB file
+python -m src.db.db_engine
 ### Auto UI
 http://localhost:8123/docs
