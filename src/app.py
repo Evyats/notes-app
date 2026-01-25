@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import logging
 from .db import db_engine
 from . import config, routes
-
+import asyncio
 
 
 ############### FAST API DEFINITION ###############
@@ -73,6 +73,7 @@ async def middleware(request: Request, call_next):
         request.url.path,
         response.status_code,
     )"""
+    await asyncio.sleep(1)  # artificial delay for testing
     return response
 
 ############### FAST API DEFINITION ###############

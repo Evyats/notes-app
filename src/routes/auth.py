@@ -40,5 +40,6 @@ def sign_in(body: SignInRequest):
 @router.get("/me")
 def me(current_user=Depends(auth_header.get_current_user)):
     return {
-        "message": f"your user id is: {current_user['id']} and your token is valid"
+        "message": f"your user id is: {current_user['id']} and your token is valid",
+        "user": current_user
     }
