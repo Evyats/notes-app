@@ -26,7 +26,9 @@ def list_users(page: int = 1, page_size: int = 10):
 class SignUpRequest(BaseModel):
     email: str
     password: str
-@router.post("")
+@router.post(
+    ""
+)
 def sign_up(body: SignUpRequest):
     email = body.email
     password_hash = pass_hash.hash(body.password)
@@ -84,6 +86,7 @@ def get_notes(user_id: int):
     return rows
 
 class AddNoteRequest(BaseModel):
+    name: str
     note: str
 @router.post(
     "/{user_id}/notes", 
@@ -91,7 +94,7 @@ class AddNoteRequest(BaseModel):
 )
 def add_note(user_id: int, body: AddNoteRequest):
     if not users.user_exists(user_id): raise HTTPException(400, f"user {user_id} does not exist")
-    rows = notes.create_note(user_id, body.note, datetime.now(UTC))
+    rows = notes.create_note(user_id, body.name, body.note, datetime.now(UTC))
     if len(rows) == 0: raise HTTPException(400, f"could not add note for user {user_id}")
     return {
         "message": "note added successfully",
@@ -107,7 +110,6 @@ def add_note(user_id: int, body: AddNoteRequest):
     dependencies=[Depends(auth_header.require_owner_or_admin)]
 )
 def get_note(user_id: int, note_id: int):
-
     if not users.user_exists(user_id): raise HTTPException(400, f"user {user_id} does not exist")
     rows = notes.get_note(user_id, note_id)
     if len(rows) == 0: raise HTTPException(400, f"note {note_id} for user {user_id} does not exist")

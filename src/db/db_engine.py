@@ -72,7 +72,8 @@ def create_notes_table():
             id              SERIAL PRIMARY KEY,
             user_id         INT NOT NULL REFERENCES users(id),
             note            TEXT,
-            created         TIMESTAMP DEFAULT NOW()
+            created         TIMESTAMP DEFAULT NOW(),
+            name            TEXT NOT NULL DEFAULT 'untitled'
         )
     """
     execute_sql(notes_query)
@@ -89,6 +90,12 @@ def add_admin_col():
     execute_sql(""" 
         ALTER TABLE users
         ADD COLUMN is_admin BOOLEAN NOT NULL DEFAULT false
+    """)
+
+def add_note_name_col():
+    execute_sql(""" 
+        ALTER TABLE notes
+        ADD COLUMN name TEXT NOT NULL DEFAULT 'untitled'
     """)
 
 def create_admin():
@@ -143,4 +150,5 @@ if __name__ == "__main__":
     # check_connectivity()
     # print_table(execute_sql("SELECT * FROM users LIMIT 3"))
     # create_admin()
+    # add_note_name_col()
     get_admin_permissions()
