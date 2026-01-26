@@ -1,66 +1,81 @@
+# Evernote Backend Service
+
+A FastAPI backend for a simple Evernote-style notes app. It provides user management, JWT-based auth, and CRUD endpoints for notes backed by PostgreSQL.
+
+## Tech Stack
+
+- FastAPI + Uvicorn
+- PostgreSQL (via `psycopg2`)
+- SQLAlchemy 2.0
+- JWT authentication (`python-jose`)
+- Password hashing (`passlib`)
+
+## API Endpoints
+
+### Auth
+
+```
+POST    /auth/login     Authenticate with email/password and receive a JWT access token.
+GET     /auth/me        Verify token and return current user info.
+```
 
 
 
+### Users
+
+```
+GET     /api/users                              List users (admin only, paginated).
+POST    /api/users                              Create a user account.
+GET     /api/users/{user_id}                    Get a user by id.
+DELETE  /api/users/{user_id}                    Delete a user and their notes (admin only).
+GET     /api/users/{user_id}/notes              List notes for a user.
+POST    /api/users/{user_id}/notes              Create a note for a user.
+GET     /api/users/{user_id}/notes/{note_id}    Get a specific note.
+DELETE  /api/users/{user_id}/notes/{note_id}    Delete a note.
+PUT     /api/users/{user_id}/notes/{note_id}    Update a note.
+```
 
 
+### Notes (Admin)
 
-Evernote - backend service
-<very short explanation about this project - what it is generally about and what it includes>
-< technologioes used here - dont forget to mention the jwt and password hashing>
+```
+GET     /api/notes      List all notes (paginated, admin only).
+```
 
+## Running Locally
 
+### Start PostgreSQL
 
+`docker compose up`
 
-Endpoints
-<all endpoints listed with very short explanation, only if needed>
+### Start the API
 
+`python -m uvicorn src.app:app --host 0.0.0.0 --reload --port 8123`
 
+## Useful Local Commands
 
+### Update dependencies after changes
 
+`pip freeze > requirements.txt`
 
+### Run DB utility (schema updates / admin tasks)
 
+`python -m src.db.db_engine`
 
-running locally:
+### Auto-generated API docs
 
-- start the postgeres db:
-docker compose up
+`http://localhost:8123/docs`
 
-- start the dastapi service:
-python -m uvicorn src.app:app --host 0.0.0.0 --reload --port 8123
+## Deploying
 
+### Start Command
 
+`python -m uvicorn src.app:app --host 0.0.0.0 --reload --port $PORT`
 
+### Environment Variables
 
-
-
-more commands for local development:
-
-- Update dependencies once adding new / removing:
-pip freeze > requirements.txt
-
-- Run DB file - for db updates or granting admin permissions:
-python -m src.db.db_engine
-
-- getting auto generateed api:
-http://localhost:8123/docs
-
-
-
-
-
-
-deploying to the cloud:
-
-- provide this command for starting the service:
-python -m uvicorn src.app:app --host 0.0.0.0 --reload --port $PORT
-
-- set environments variables:
-PORT
-DATABASE_URL
-
-
-
-
+- `PORT`
+- `DATABASE_URL`
 
 
 
