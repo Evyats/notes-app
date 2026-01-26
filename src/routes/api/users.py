@@ -96,6 +96,7 @@ def add_note(user_id: int, body: AddNoteRequest):
     if not users.user_exists(user_id): raise HTTPException(400, f"user {user_id} does not exist")
     rows = notes.create_note(user_id, body.name, body.note, datetime.now(UTC))
     if len(rows) == 0: raise HTTPException(400, f"could not add note for user {user_id}")
+    logger.info(f"note {rows[0]['id']} for user {user_id} was created (name: {body.name})")
     return {
         "message": "note added successfully",
         "details": rows[0]

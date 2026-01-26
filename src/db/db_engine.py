@@ -117,7 +117,7 @@ def create_admin():
 def get_admin_permissions():
     rows = execute_sql("SELECT id FROM users WHERE email='admin'")
     admin_id = rows[0]["id"]
-    token = jwt.create_access_token(admin_id, 30, 0)
+    token = jwt.create_access_token(admin_id, 90, 0)
     print("Bearer", token)
     return {
         "user_id": admin_id,
