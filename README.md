@@ -41,22 +41,23 @@ GET     /api/notes      List all notes (admin only, paginated).
 
 ## Running Locally
 
-| Task | Command |
-| --- | --- |
-| Start PostgreSQL | `docker compose up` |
-| Start the API | `python -m uvicorn src.app:app --host 0.0.0.0 --reload --port 8123` |
+| Task                  | Command |
+| ---                   | --- |
+| Install dependencies  | `pip install -r requirements.txt` |
+| Start PostgreSQL      | `docker compose up` |
+| Start the API         | `python -m uvicorn src.app:app --host 0.0.0.0 --reload --port 8123` |
 
 ## Useful Local Commands
 
-| Task | Command |
-| --- | --- |
-| Run DB scripts (schema updates / admin access token) | `python -m src.db.db_engine` |
-| Update dependencies after changes | `pip freeze > requirements.txt` |
-| Auto-generated API docs | `http://localhost:8123/docs` |
+| Task                                                  | Command |
+| ---                                                   | --- |
+| Run DB scripts (schema updates / admin access token)  | `python -m src.db.db_engine` |
+| Update dependencies after changes                     | `pip freeze > requirements.txt` |
+| Auto-generated API docs                               | `http://localhost:8123/docs` |
 
 ## Deploying
 
-| Task | Value |
-| --- | --- |
-| Start Command | `python -m uvicorn src.app:app --host 0.0.0.0 --reload --port $PORT` |
+| Task                  | Value |
+| ---                   | --- |
+| Start Command         | `python -m uvicorn src.app:app --host 0.0.0.0 --reload --port $PORT` |
 | Environment Variables | `PORT`, `DATABASE_URL` |
