@@ -2,6 +2,5 @@ __pycache__/
 .venv/
 .vscode/
 .env
-docker-compose.yml
 postgres-data/
 tests.py
